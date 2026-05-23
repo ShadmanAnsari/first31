@@ -1,0 +1,203 @@
+
+que 3
+
+# Playfair Cipher Encryption and Decryption
+
+def generate_key_matrix(key):
+    key = key.upper().replace("J", "I")
+    matrix = []
+    used = set()
+
+    # Add key letters
+    for ch in key:
+        if ch.isalpha() and ch not in used:
+            used.add(ch)
+            matrix.append(ch)
+
+    # Add remaining alphabets
+    for ch in "ABCDEFGHIKLMNOPQRSTUVWXYZ":
+        if ch not in used:
+            used.add(ch)
+            matrix.append(ch)
+
+    # Convert into 5x5 matrix
+    return [matrix[i:i+5] for i in range(0, 25, 5)]
+
+
+def find_position(matrix, ch):
+    for i in range(5):
+        for j in range(5):
+            if matrix[i][j] == ch:
+                return i, j
+
+
+def prepare_text(text):
+    text = text.upper().replace("J", "I")
+    text = "".join([c for c in text if c.isalpha()])
+
+    prepared = ""
+    i = 0
+
+    while i < len(text):
+        a = text[i]
+
+        if i + 1 < len(text):
+            b = text[i + 1]
+
+            if a == b:
+                prepared += a + "X"
+                i += 1
+            else:
+                prepared += a + b
+                i += 2
+        else:
+            prepared += a + "X"
+            i += 1
+
+    return prepared
+
+
+def encrypt(text, matrix):
+    text = prepare_text(text)
+    cipher = ""
+
+    for i in range(0, len(text), 2):
+        a, b = text[i], text[i + 1]
+
+        row1, col1 = find_position(matrix, a)
+        row2, col2 = find_position(matrix, b)
+
+        # Same row
+        if row1 == row2:
+            cipher += matrix[row1][(col1 + 1) % 5]
+            cipher += matrix[row2][(col2 + 1) % 5]
+
+        # Same column
+        elif col1 == col2:
+            cipher += matrix[(row1 + 1) % 5][col1]
+            cipher += matrix[(row2 + 1) % 5][col2]
+
+        # Rectangle rule
+        else:
+            cipher += matrix[row1][col2]
+            cipher += matrix[row2][col1]
+
+    return cipher
+
+
+def decrypt(cipher, matrix):
+    text = cipher.upper()
+    plain = ""
+
+    for i in range(0, len(text), 2):
+        a, b = text[i], text[i + 1]
+
+        row1, col1 = find_position(matrix, a)
+        row2, col2 = find_position(matrix, b)
+
+        # Same row
+        if row1 == row2:
+            plain += matrix[row1][(col1 - 1) % 5]
+            plain += matrix[row2][(col2 - 1) % 5]
+
+        # Same column
+        elif col1 == col2:
+            plain += matrix[(row1 - 1) % 5][col1]
+            plain += matrix[(row2 - 1) % 5][col2]
+
+        # Rectangle rule
+        else:
+            plain += matrix[row1][col2]
+            plain += matrix[row2][col1]
+
+    return plain
+
+
+# Main Program
+key = input("Enter key: ")
+matrix = generate_key_matrix(key)
+
+print("\nKey Matrix:")
+for row in matrix:
+    print(row)
+
+message = input("\nEnter plaintext: ")
+
+ciphertext = encrypt(message, matrix)
+print("Encrypted Text:", ciphertext)
+
+decrypted = decrypt(ciphertext, matrix)
+print("Decrypted Text:", decrypted)
+
+
+
+que 4
+
+# Hill Cipher for messages of any length
+
+keyMatrix = [[0] * 3 for i in range(3)]
+
+# Generate key matrix
+def getKeyMatrix(key):
+    k = 0
+    for i in range(3):
+        for j in range(3):
+            keyMatrix[i][j] = ord(key[k]) - 65
+            k += 1
+
+
+# Encrypt one 3-letter block
+def encrypt_block(block):
+
+    messageVector = [[0] for i in range(3)]
+    cipherMatrix = [[0] for i in range(3)]
+
+    for i in range(3):
+        messageVector[i][0] = ord(block[i]) - 65
+
+    for i in range(3):
+        cipherMatrix[i][0] = 0
+
+        for x in range(3):
+            cipherMatrix[i][0] += (
+                keyMatrix[i][x] * messageVector[x][0]
+            )
+
+        cipherMatrix[i][0] %= 26
+
+    cipherText = ""
+
+    for i in range(3):
+        cipherText += chr(cipherMatrix[i][0] + 65)
+
+    return cipherText
+
+
+# Main Hill Cipher function
+def HillCipher(message, key):
+
+    getKeyMatrix(key)
+
+    message = message.upper().replace(" ", "")
+
+    # Padding with X if length not multiple of 3
+    while len(message) % 3 != 0:
+        message += "X"
+
+    cipherText = ""
+
+    # Process message in blocks of 3
+    for i in range(0, len(message), 3):
+
+        block = message[i:i+3]
+
+        cipherText += encrypt_block(block)
+
+    print("Ciphertext:", cipherText)
+
+
+# Driver code
+message = "HELLO WORLD"
+key = "GYBNQKURP"
+
+HillCipher(message, key)
