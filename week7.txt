@@ -1,0 +1,387 @@
+			week 6
+que 4 
+
+# Hill Cipher Without NumPy
+
+# 2x2 Key Matrix
+key_matrix = [[3, 3],
+              [2, 5]]
+
+
+# Function to find modular inverse
+def mod_inverse(a, m):
+    for x in range(1, m):
+        if (a * x) % m == 1:
+            return x
+    return None
+
+
+# Find inverse of 2x2 matrix modulo 26
+def inverse_key_matrix(matrix):
+    a, b = matrix[0]
+    c, d = matrix[1]
+
+    det = (a * d - b * c) % 26
+    det_inv = mod_inverse(det, 26)
+
+    if det_inv is None:
+        raise ValueError("Matrix is not invertible")
+
+    # Adjoint matrix
+    inverse = [
+        [( d * det_inv) % 26, (-b * det_inv) % 26],
+        [(-c * det_inv) % 26, ( a * det_inv) % 26]
+    ]
+
+    return inverse
+
+
+# Prepare text
+def process_text(text):
+    text = text.upper().replace(" ", "")
+
+    # Keep alphabets only
+    text = ''.join([c for c in text if c.isalpha()])
+
+    # Add X if odd length
+    if len(text) % 2 != 0:
+        text += 'X'
+
+    return text
+
+
+# Matrix multiplication for 2x2 and 2x1
+def multiply_matrix(matrix, vector):
+
+    result1 = (matrix[0][0] * vector[0] +
+               matrix[0][1] * vector[1]) % 26
+
+    result2 = (matrix[1][0] * vector[0] +
+               matrix[1][1] * vector[1]) % 26
+
+    return [result1, result2]
+
+
+# Encryption
+def encrypt(text, key):
+    text = process_text(text)
+
+    cipher = ""
+
+    for i in range(0, len(text), 2):
+
+        pair = text[i:i+2]
+
+        # Convert letters to numbers
+        vector = [
+            ord(pair[0]) - 65,
+            ord(pair[1]) - 65
+        ]
+
+        result = multiply_matrix(key, vector)
+
+        cipher += chr(result[0] + 65)
+        cipher += chr(result[1] + 65)
+
+    return cipher
+
+
+# Decryption
+def decrypt(cipher, key):
+
+    inverse_key = inverse_key_matrix(key)
+
+    plain = ""
+
+    for i in range(0, len(cipher), 2):
+
+        pair = cipher[i:i+2]
+
+        vector = [
+            ord(pair[0]) - 65,
+            ord(pair[1]) - 65
+        ]
+
+        result = multiply_matrix(inverse_key, vector)
+
+        plain += chr(result[0] + 65)
+        plain += chr(result[1] + 65)
+
+    return plain
+
+
+# Read plaintext from file
+with open("input.txt", "r") as file:
+    plain_text = file.read()
+
+
+# Encrypt
+encrypted_text = encrypt(plain_text, key_matrix)
+
+with open("encrypted.txt", "w") as file:
+    file.write(encrypted_text)
+
+
+# Decrypt
+decrypted_text = decrypt(encrypted_text, key_matrix)
+
+with open("decrypted.txt", "w") as file:
+    file.write(decrypted_text)
+
+
+print("Original Text :", plain_text)
+print("Encrypted Text:", encrypted_text)
+print("Decrypted Text:", decrypted_text)
+
+
+
+
+			week 7
+
+
+que 1 
+
+# Hash Function Implementation using Python
+
+import hashlib
+
+# Input message
+message = input("Enter message: ")
+
+# Convert message into bytes
+msg = message.encode()
+
+# Create SHA-256 hash object
+hash_object = hashlib.sha256(msg)
+
+# Generate hash value
+hash_value = hash_object.hexdigest()
+
+print("Original Message :", message)
+print("Hash Value :", hash_value)
+
+
+que 2
+
+# Blowfish Algorithm Implementation in Python
+
+from Crypto.Cipher import Blowfish
+from Crypto.Util.Padding import pad, unpad
+
+# Secret key
+key = b"mysecretkey"
+
+# Create Blowfish cipher object
+cipher = Blowfish.new(key, Blowfish.MODE_ECB)
+
+# Plaintext
+plaintext = "Cyber Security"
+
+print("Original Text :", plaintext)
+
+# Encryption
+padded_text = pad(plaintext.encode(), Blowfish.block_size)
+
+encrypted_text = cipher.encrypt(padded_text)
+
+print("Encrypted Text :", encrypted_text.hex())
+
+# Decryption
+decrypted_padded = cipher.decrypt(encrypted_text)
+
+decrypted_text = unpad(decrypted_padded, Blowfish.block_size)
+
+print("Decrypted Text :", decrypted_text.decode())
+
+
+que 3
+
+# TwoFish Algorithm Implementation in Python
+
+from twofish import Twofish
+from Crypto.Util.Padding import pad, unpad
+
+# Secret key (16 bytes)
+key = b"thisisasecretky"
+
+# Create TwoFish cipher object
+cipher = Twofish(key)
+
+# Plaintext
+plaintext = "Cyber Security"
+
+print("Original Text :", plaintext)
+
+# Convert plaintext to bytes and pad it
+padded_text = pad(plaintext.encode(), 16)
+
+# Encryption
+encrypted_text = cipher.encrypt(padded_text)
+
+print("Encrypted Text :", encrypted_text.hex())
+
+# Decryption
+decrypted_padded = cipher.decrypt(encrypted_text)
+
+# Remove padding
+decrypted_text = unpad(decrypted_padded, 16)
+
+print("Decrypted Text :", decrypted_text.decode())
+
+
+
+que 4
+
+# Diffie-Hellman Encryption and Decryption Example
+
+# Public values
+p = 23
+g = 5
+
+# Private keys
+a = 6   # Alice
+b = 15  # Bob
+
+
+# Generate public keys
+A = (g ** a) % p
+B = (g ** b) % p
+
+print("Alice Public Key :", A)
+print("Bob Public Key   :", B)
+
+
+# Generate shared secret key
+alice_key = (B ** a) % p
+bob_key = (A ** b) % p
+
+print("Shared Secret Key:", alice_key)
+
+
+# Encryption function
+def encrypt(message, key):
+
+    cipher = ""
+
+    for char in message:
+
+        if char.isalpha():
+
+            # Handle uppercase
+            if char.isupper():
+                cipher += chr((ord(char) - 65 + key) % 26 + 65)
+
+            # Handle lowercase
+            else:
+                cipher += chr((ord(char) - 97 + key) % 26 + 97)
+
+        else:
+            cipher += char
+
+    return cipher
+
+
+# Decryption function
+def decrypt(cipher, key):
+
+    plain = ""
+
+    for char in cipher:
+
+        if char.isalpha():
+
+            if char.isupper():
+                plain += chr((ord(char) - 65 - key) % 26 + 65)
+
+            else:
+                plain += chr((ord(char) - 97 - key) % 26 + 97)
+
+        else:
+            plain += char
+
+    return plain
+
+
+# Original message
+message = "Cyber Security"
+
+# Encrypt using shared key
+encrypted = encrypt(message, alice_key)
+
+# Decrypt using shared key
+decrypted = decrypt(encrypted, bob_key)
+
+print("Original Message :", message)
+print("Encrypted Message:", encrypted)
+print("Decrypted Message:", decrypted)
+
+
+
+			week 9
+que 1
+
+import hashlib
+
+message = b"Hello World"
+
+sha1_hash = hashlib.sha1(message).hexdigest()
+
+print("SHA-1 Hash:")
+print(sha1_hash)
+
+import hashlib
+
+message = b"Hello World"
+
+sha512_hash = hashlib.sha512(message).hexdigest()
+
+print("SHA-512 Hash:")
+print(sha512_hash)
+
+
+
+que 2
+
+import hashlib
+
+message = b"Hello World"
+
+md5_hash = hashlib.md5(message).hexdigest()
+
+print("MD5 Hash:")
+print(md5_hash)
+
+
+
+
+que 3
+
+# HMAC Implementation using Python
+
+import hmac
+import hashlib
+
+# Secret key
+key = b"secret_key"
+
+# Message
+message = b"Hello Cyber Security"
+
+# Create HMAC using SHA-256
+hmac_obj = hmac.new(key, message, hashlib.sha256)
+
+# Generate HMAC digest
+hmac_digest = hmac_obj.hexdigest()
+
+print("Message :", message.decode())
+print("HMAC :", hmac_digest)
+
+# Verification
+received_hmac = hmac_digest
+
+verify = hmac.compare_digest(hmac_digest, received_hmac)
+
+if verify:
+    print("HMAC Verification Successful")
+else:
+    print("HMAC Verification Failed")

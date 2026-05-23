@@ -1,0 +1,180 @@
+que 1
+
+# Find Inverse of a Number under Modulo p using SageMath
+
+# Number
+a = 7
+
+# Prime modulus
+p = 17
+
+# Find modular inverse
+inverse = inverse_mod(a, p)
+
+print("Number =", a)
+print("Modulo =", p)
+print("Modular Inverse =", inverse)
+
+# Verification
+print("\nVerification:")
+print((a * inverse) % p)
+
+
+que 3
+
+# Define finite field
+p = 97
+F = FiniteField(p)
+
+# Define elliptic curve: y^2 = x^3 + 2x + 3
+E = EllipticCurve(F, [2, 3])
+
+print("Elliptic Curve:", E)
+
+# Base point (generator)
+G = E(3, 6)
+
+print("Base Point G =", G)
+
+# -------------------------
+# Key Generation
+# -------------------------
+
+# Private key of receiver
+d = 5
+
+# Public key
+Q = d * G
+
+print("Private Key =", d)
+print("Public Key Q =", Q)
+
+# -------------------------
+# Message Point
+# -------------------------
+
+M = E(80, 10)
+
+print("Message Point M =", M)
+
+# -------------------------
+# Encryption
+# -------------------------
+
+# Random integer
+k = 7
+
+# Cipher points
+C1 = k * G
+C2 = M + k * Q
+
+print("\nEncrypted Cipher:")
+print("C1 =", C1)
+print("C2 =", C2)
+
+# -------------------------
+# Decryption
+# -------------------------
+
+M_decrypted = C2 - d * C1
+
+print("\nDecrypted Message:")
+print(M_decrypted)
+
+
+
+que 4
+
+# Finite field
+F = GF(97)
+
+# Elliptic curve: y^2 = x^3 + 2x + 3
+E = EllipticCurve(F, [2, 3])
+
+print("Elliptic Curve:")
+print(E)
+
+# Generator point
+G = E(3, 6)
+
+print("\nGenerator Point G =", G)
+
+# --------------------------------
+# Alice Key Generation
+# --------------------------------
+
+dA = 5          # Alice private key
+QA = dA * G     # Alice public key
+
+print("\nAlice Private Key =", dA)
+print("Alice Public Key =", QA)
+
+# --------------------------------
+# Bob Key Generation
+# --------------------------------
+
+dB = 7          # Bob private key
+QB = dB * G     # Bob public key
+
+print("\nBob Private Key =", dB)
+print("Bob Public Key =", QB)
+
+# --------------------------------
+# Shared Secret Computation
+# --------------------------------
+
+# Alice computes
+SA = dA * QB
+
+# Bob computes
+SB = dB * QA
+
+print("\nShared Secret computed by Alice =", SA)
+print("Shared Secret computed by Bob   =", SB)
+
+# Verify
+if SA == SB:
+    print("\nECDH Key Exchange Successful")
+else:
+    print("\nKey Exchange Failed")
+
+
+que 5
+
+# RSA Algorithm using SageMath
+
+# Step 1: Choose two prime numbers
+p = 61
+q = 53
+
+# Step 2: Compute n = p*q
+n = p * q
+print("n =", n)
+
+# Step 3: Compute Euler Totient function
+phi = (p - 1) * (q - 1)
+print("phi(n) =", phi)
+
+# Step 4: Choose public exponent e
+e = 17
+
+# Check gcd(e, phi) = 1
+print("gcd(e, phi) =", gcd(e, phi))
+
+# Step 5: Compute private key d
+d = inverse_mod(e, phi)
+
+print("Public Key (e, n) =", (e, n))
+print("Private Key (d, n) =", (d, n))
+
+# Step 6: Message to encrypt
+message = 65
+print("\nOriginal Message =", message)
+
+# Step 7: Encryption
+cipher = power_mod(message, e, n)
+print("Encrypted Message =", cipher)
+
+# Step 8: Decryption
+decrypted = power_mod(cipher, d, n)
+print("Decrypted Message =", decrypted)
